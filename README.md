@@ -25,21 +25,34 @@ Instead of duplicating terabytes of 4K video files across your NAS, home servers
 ## Installation
 
 ### Method A: ZimaOS / CasaOS (1-Click)
-1. Open your dashboard and navigate to the App Store.
-2. Click **"+"** (Install custom app) and select **"Import"**.
-3. Paste the `docker-compose.yml` contents and submit.
-4. The system will automatically detect the volumes and ports.
+1. Open your ZimaOS or CasaOS dashboard.
+2. Go to the App Store and click the **"+"** (Install custom app) button.
+3. Select **"Import"**.
+4. Paste the content of your `docker-compose.yml` file into the editor.
+5. The system will auto-detect volumes, ports, and metadata. Configure your media and STRM library paths as prompted.
+6. Click **"Submit"** to deploy.
 
 ### Method B: Standard Docker / CLI
-1. Ensure Docker Compose v2 is installed.
-2. Edit `.env` with your storage paths:
+1. **Prerequisites**: Ensure Docker Engine and Docker Compose v2 are installed.
+2. **Clone the repository**:
    ```bash
-   MEDIA_DIR=/path/to/your/media
-   STRM_DIR=/path/to/your/strm-output
+   git clone https://github.com/marcodido69/STRM-Bridge.git
+   cd STRM-Bridge
    ```
-3. Start the containers:
+3. **Configure Environment**: Copy the template and edit paths:
+   ```bash
+   cp .env.example .env
+   # Edit .env and set your absolute paths
+   # MEDIA_DIR=/path/to/media
+   # STRM_DIR=/path/to/strm-output
+   ```
+4. **Deploy**:
    ```bash
    docker compose up -d
+   ```
+5. **Logs**: Check the transformation status:
+   ```bash
+   docker compose logs -f strm-transformer
    ```
 
 ## License
