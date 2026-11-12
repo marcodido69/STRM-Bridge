@@ -636,7 +636,7 @@ This Docker Compose YAML is natively compatible with **ZimaOS** (ZimaBoard, Zima
    \`\`\`
 `;
 
-  const repoUrl = `https://github.com/${config.githubRepoOwner || 'marcodido69'}/${config.githubRepoName || 'docker-strm-https-engine'}`;
+  const repoUrl = `https://github.com/${config.githubRepoOwner || 'marcodido69'}/${config.githubRepoName || 'STRM-Bridge'}`;
 
   const gitPublishCommands = `#!/usr/bin/env bash
 # ==============================================================================
