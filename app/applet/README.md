@@ -4,6 +4,8 @@
 
 STRM Bridge is a high-performance, production-ready solution to bridge the gap between your physical media library and modern streaming players. It transforms bulky media files into lightweight, portable **.strm** pointer files, served securely over **HTTPS**.
 
+*Note: This project provides a local-only HTTPS bridge solution. It is distinct from other projects (e.g., StrmBridge by mccann6) which focus on cloud-debrid library syncing.*
+
 ## Why STRM Bridge?
 Instead of duplicating terabytes of 4K video files across your NAS, home servers, or remote VPS:
 

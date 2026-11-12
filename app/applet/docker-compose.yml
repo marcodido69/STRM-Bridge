@@ -1,34 +1,24 @@
 version: '3.8'
-
 services:
   strm-transformer:
-    image: python:3.11-alpine
+    build: .
     container_name: strm-transformer
     restart: unless-stopped
-    command: sh -c "pip install --no-cache-dir watchdog && python3 -u /app/generate_strm.py"
     environment:
-      - STREAM_DOMAIN=${STREAM_DOMAIN:-your-domain.duckdns.org}
-      - STREAM_PORT=${STREAM_PORT:-443}
-      - STREAM_PROTOCOL=https
-      - STRM_EXTENSION=.strm
-      - AUTH_MODE=token_hmac
+      - STREAM_DOMAIN=${STREAM_DOMAIN:-localhost}
+      - MEDIA_DIR=/media
+      - STRM_DIR=/strm-output
     volumes:
-      - ${MEDIA_DIR:-/path/to/media}:/media:ro
-      - ${STRM_DIR:-/path/to/strm-output}:/strm-output:rw
-      - ./generate_strm.py:/app/generate_strm.py:ro
+      - ${MEDIA_DIR:-./media}:/media:ro
+      - ${STRM_DIR:-./strm-output}:/strm-output:rw
 
   https-media-server:
     image: nginx:alpine
     container_name: nginx-https-stream
     restart: unless-stopped
     ports:
-      - "443:443"
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./certs:/etc/nginx/certs:ro
-      - ${MEDIA_DIR:-/path/to/media}:/media:ro
-
-networks:
-  stream-net:
-    driver: bridge
+      - ${MEDIA_DIR:-./media}:/media:ro
+EOF
