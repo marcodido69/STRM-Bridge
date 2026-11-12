@@ -1,0 +1,6 @@
+{
+  "name": "Docker STRM HTTPS Stream Engine",
+  "description": "Production Docker application and YAML generator to transform media libraries into STRM (.strm) stream files served securely over HTTPS for Jellyfin, Plex, Emby, and Kodi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
