@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-import os
-import sys
-import time
-import hmac
-import hashlib
-import urllib.parse
+import os, time, hmac, hashlib, urllib.parse
 from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -13,35 +8,34 @@ MEDIA_ROOT = os.getenv("MEDIA_DIR", "/media")
 STRM_ROOT = os.getenv("STRM_DIR", "/strm-output")
 STREAM_DOMAIN = os.getenv("STREAM_DOMAIN", "localhost")
 STREAM_PORT = os.getenv("STREAM_PORT", "443")
-STREAM_PROTOCOL = os.getenv("STREAM_PROTOCOL", "https")
-STRM_EXT = os.getenv("STRM_EXTENSION", ".strm")
+TOKEN_SECRET = os.getenv("TOKEN_SECRET", "super-secret-key").encode('utf-8')
+STRM_EXT = ".strm"
 
-VIDEO_EXTENSIONS = {".mkv", ".mp4", ".avi", ".mov", ".m4v", ".webm", ".ts"}
-
-def build_https_url(relative_path: str) -> str:
-    encoded_path = "/".join([urllib.parse.quote(part) for part in relative_path.split("/")])
-    return f"{STREAM_PROTOCOL}://{STREAM_DOMAIN}:{STREAM_PORT}/{encoded_path}"
+def build_secure_url(rel_path: str) -> str:
+    path_str = urllib.parse.quote(rel_path)
+    expires = int(time.time()) + 3600
+    sig = hmac.new(TOKEN_SECRET, f"{path_str}:{expires}".encode(), hashlib.sha256).hexdigest()
+    return f"https://{STREAM_DOMAIN}:{STREAM_PORT}/{path_str}?sig={sig}&exp={expires}"
 
 def process_file(source_path: Path):
-    if source_path.suffix.lower() not in VIDEO_EXTENSIONS: return
-    rel_path = source_path.relative_to(MEDIA_ROOT)
-    dest_path = Path(STRM_ROOT) / rel_path.with_suffix(STRM_EXT)
-    dest_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(dest_path, "w", encoding="utf-8") as f:
-        f.write(build_https_url(rel_path.as_posix()) + "\n")
-    print(f"[STRM] Generated: {dest_path}")
+    if source_path.suffix.lower() not in {".mkv", ".mp4", ".avi"}: return
+    rel = source_path.relative_to(MEDIA_ROOT)
+    dest = Path(STRM_ROOT) / rel.with_suffix(STRM_EXT)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    with open(dest, "w") as f: f.write(build_secure_url(rel.as_posix()) + "\n")
 
-# Simplified watcher logic for brevity
-class MediaChangeHandler(FileSystemEventHandler):
-    def on_created(self, event): process_file(Path(event.src_path))
+class Handler(FileSystemEventHandler):
+    def on_created(self, e): process_file(Path(e.src_path))
+    def on_modified(self, e): process_file(Path(e.src_path))
+    def on_deleted(self, e):
+        dest = Path(STRM_ROOT) / Path(e.src_path).relative_to(MEDIA_ROOT).with_suffix(STRM_EXT)
+        if dest.exists(): dest.unlink()
 
 if __name__ == "__main__":
-    Path(STRM_ROOT).mkdir(parents=True, exist_ok=True)
     observer = Observer()
-    observer.schedule(MediaChangeHandler(), path=MEDIA_ROOT, recursive=True)
+    observer.schedule(Handler(), path=MEDIA_ROOT, recursive=True)
     observer.start()
-    print("Watcher active...")
     try:
         while True: time.sleep(1)
-    except KeyboardInterrupt: observer.stop()
+    except: observer.stop()
     observer.join()
